@@ -20,7 +20,6 @@ const VideoPlayer = ({ video, likes, dislikes, onLike, onDislike, showChat, onTo
         </div>
       </div>
       <h1 className={styles.title}>{video.title}</h1>
-      
       <div className={styles.actions}>
         <button className={styles.actionBtn} onClick={onLike}>
           👍 {likes.toLocaleString()}

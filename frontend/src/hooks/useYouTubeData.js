@@ -71,7 +71,7 @@ export function useYouTubeData() {
   });
 
   if (res.ok) await fetchData();
-};
+  };
 
   // 3. Like/Dislike (Updated for Spring @PatchMapping)
   const handleLikeDislike = async (type) => {
