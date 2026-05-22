@@ -3,6 +3,7 @@
   background-color: #0f0f0f;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 16px;
   border-bottom: 1px solid #2e303a;
   position: sticky;
@@ -23,4 +24,63 @@
   background-color: red;
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+.leftSection, .rightSection {
+  display: flex;
+  align-items: center;
+  /* Gives left and right sections equal weight so the center stays perfectly centered */
+  flex: 1; 
+}
+
+.centerSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 2; 
+  max-width: 600px; 
+  width: 100%;
+}
+
+.rightSection {
+  justify-content: flex-end; 
+  gap: 16px;
+}
+
+.searchContainer {
+  display: flex;
+  width: 100%;
+  border: 1px solid #303030;
+  border-radius: 40px 0 0 40px;
+  border-top-right-radius: 40px; /*search for these*/
+  border-bottom-right-radius: 40px;
+  overflow: hidden; /*necessary?  */
+  background-color: #121212;
+}
+
+
+.searchInput{
+  flex: 1;
+  background-color: #121212;
+  border: none;
+  color: white;
+  padding: 0 16px;
+  height: 40px;
+  outline: none;
+}
+
+.searchButton {
+  width: 64px;
+  height: 40px;
+  background-color: #222222;
+  border: none;
+  border-left: 1px solid #303030;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.searchButton:hover {
+  background-color: #272727; /* Subtle hover effect */
 }
