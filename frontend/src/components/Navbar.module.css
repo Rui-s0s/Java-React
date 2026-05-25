@@ -42,22 +42,14 @@
   width: 100%;
 }
 
-.rightSection {
-  justify-content: flex-end; 
-  gap: 16px;
-}
-
 .searchContainer {
   display: flex;
   width: 100%;
   border: 1px solid #303030;
-  border-radius: 40px 0 0 40px;
-  border-top-right-radius: 40px; /*search for these*/
-  border-bottom-right-radius: 40px;
-  overflow: hidden; /*necessary?  */
+  border-radius: 40px;
+  overflow: hidden;
   background-color: #121212;
 }
-
 
 .searchInput{
   flex: 1;
@@ -83,4 +75,17 @@
 
 .searchButton:hover {
   background-color: #272727; /* Subtle hover effect */
+}
+
+.rightSection {
+  justify-content: flex-end; 
+  gap: 16px;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  
 }
