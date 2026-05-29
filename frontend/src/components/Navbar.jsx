@@ -9,6 +9,15 @@ const Navbar = ({ onToggleLayout }) => {
   // State to track modals
   const [activeModal, setActiveModal] = useState(null);
 
+  // TEST Permanent state management
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('setting_darkMode') === 'true';
+  });
+
+  const [autoplay, setAutoplay] = useState(() => {
+    return localStorage.getItem('setting_autoplay') === 'true';
+  });
+
   // Toggle menu function
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
@@ -33,6 +42,14 @@ const Navbar = ({ onToggleLayout }) => {
   }
 
   const closeModal = () => setActiveModal(null);
+
+  // TEST Save changes
+  const handleSaveChanges = () => {
+    localStorage.setItem('setting_darkMode', darkMode);
+    localStorage.setItem('setting_autoplay', autoplay);
+    closeModal();
+    
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -82,7 +99,6 @@ const Navbar = ({ onToggleLayout }) => {
       {/* 4. Settings Modal Render */}
       {activeModal === 'settings' && (
         <div className={styles.modalBackdrop} onClick={closeModal}>
-          {/* stopPropagation prevents the modal from closing when clicking inside the box */}
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>Settings</h2>
@@ -90,13 +106,27 @@ const Navbar = ({ onToggleLayout }) => {
             </div>
             <div className={styles.modalBody}>
               <p>Customize your experience here:</p>
+              
+              {/* Controlled Dark Mode Checkbox */}
               <label className={styles.settingOption}>
-                <input type="checkbox" /> Dark Mode (Always On)
+                <input 
+                  type="checkbox" 
+                  checked={darkMode}
+                  onChange={(e) => setDarkMode(e.target.checked)}
+                /> Dark Mode (Always On)
               </label>
+              
+              {/* Controlled Autoplay Checkbox */}
               <label className={styles.settingOption}>
-                <input type="checkbox" /> Autoplay Videos
+                <input 
+                  type="checkbox" 
+                  checked={autoplay}
+                  onChange={(e) => setAutoplay(e.target.checked)}
+                /> Autoplay Videos
               </label>
-              <button className={styles.saveButton} onClick={closeModal}>Save Changes</button>
+              
+              {/* --- NEW: Trigger save function on click --- */}
+              <button className={styles.saveButton} onClick={handleSaveChanges}>Save Changes</button>
             </div>
           </div>
         </div>
