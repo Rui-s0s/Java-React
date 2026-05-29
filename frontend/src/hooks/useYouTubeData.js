@@ -57,20 +57,20 @@ export function useYouTubeData() {
 
   // 2. Add Comment (Updated for Spring /comments endpoint)
   const handleSendMessage = async (text) => {
-  if (!currentVideo) return;
+    if (!currentVideo) return;
 
-  const savedName = localStorage.getItem('chat_username') || "Anonymous";
+    const savedName = localStorage.getItem('chat_username') || "Anonymous";
 
-  const res = await fetch(`${API_BASE}/videos/${currentVideo.id}/comments`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      text: text,
-      author: savedName
-    })
-  });
+    const res = await fetch(`${API_BASE}/videos/${currentVideo.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        text: text,
+        author: savedName
+      })
+    });
 
-  if (res.ok) await fetchData();
+    if (res.ok) await fetchData();
   };
 
   // 3. Like/Dislike (Updated for Spring @PatchMapping)
