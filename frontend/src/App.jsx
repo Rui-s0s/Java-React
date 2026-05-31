@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import VideoPlayer from './components/VideoPlayer';
@@ -20,7 +20,10 @@ function App() {
 
   return (
     <div className="app-container">
-      <Navbar />
+      <Navbar 
+      searchQuery={state.searchQuery} 
+      setSearchQuery={actions.setSearchQuery} 
+      />
 
       <main className={`main-layout ${!state.showChat ? 'hide-chat' : ''}`}>
         {state.currentVideo ? (
@@ -73,6 +76,7 @@ function App() {
           onNewVideoLinkChange={actions.setNewVideoLink}
           onVideoSubmit={actions.handleVideoSubmit}
           editingVideoId={state.editingVideoId}
+          searchQuery={state.searchQuery}                        // THIS SHOULD FILTER
         />
       </main>
     </div>

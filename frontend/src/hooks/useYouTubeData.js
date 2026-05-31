@@ -23,6 +23,9 @@ export function useYouTubeData() {
 
   const [expandedPlaylists, setExpandedPlaylists] = useState([]);
 
+  // Search playlist state
+  const [searchQuery, setSearchQuery] = useState('');
+
   // 1. Fetch All Playlists (Spring returns a List<Playlist>)
   const fetchData = async () => {
     try {
@@ -224,7 +227,8 @@ export function useYouTubeData() {
       step,
       isCreatingPlaylist,
       editingPlaylistId,
-      newPlaylistName
+      newPlaylistName,
+      searchQuery               // THIS FILTERS
     },
     actions: {
       setShowChat,
@@ -242,7 +246,8 @@ export function useYouTubeData() {
       startAddingVideo,
       startEditVideo,
       deleteVideo,
-      handleVideoSubmit
+      handleVideoSubmit,
+      setSearchQuery        // THIS FILTERS TOO 
     }
   };
 }

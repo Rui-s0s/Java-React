@@ -2,7 +2,8 @@ import React from 'react';
 import PlaylistItem from './PlaylistItem';
 import styles from './Playlists.module.css';
 
-const PlaylistsContainer = ({ 
+const PlaylistsContainer = ({
+  searchQuery = '', // 1. Accept the searchQuery prop (default to empty string) 
   playlists, 
   isCreating, 
   onStartCreate, 
@@ -28,6 +29,14 @@ const PlaylistsContainer = ({
   onVideoSubmit,
   editingVideoId
 }) => {
+
+  const filteredPlaylists = !searchQuery.trim() 
+    ? playlists 
+    : playlists.filter((playlist) => 
+        playlist.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+    
   return (
     <section className={styles.descriptionSection}>
       <div className={styles.playlistsContainer}>
@@ -60,7 +69,7 @@ const PlaylistsContainer = ({
           </div>
         )}
 
-        {playlists.map((playlist) => (
+        {filteredPlaylists.map((playlist) => (
           <PlaylistItem 
             key={playlist.id}
             playlist={playlist}
@@ -85,6 +94,7 @@ const PlaylistsContainer = ({
             onNewVideoLinkChange={onNewVideoLinkChange}
             onVideoSubmit={onVideoSubmit}
             editingVideoId={editingVideoId}
+            searchQuery={searchQuery}
           />
         ))}
       </div>
