@@ -106,6 +106,11 @@
   width: 90%;
   max-width: 480px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  
+  /* FIXED: Prevents the modal box from stretching out of the screen */
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh; 
 }
 
 .modalHeader {
@@ -139,6 +144,11 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  
+  /* FIXED: Restricts tag area height and turns on a clean custom scrollbar */
+  max-height: 250px; 
+  overflow-y: auto;
+  padding: 4px; /* Tiny padding prevents focus borders from getting clipped */
 }
 
 .tagButton {

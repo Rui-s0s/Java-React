@@ -88,10 +88,10 @@ const VideoPlayer = ({
                     className={styles.tagButton}
                     onClick={() => {
                       onSetEditingTagIndex(index);
-                      onSetEditingTagValue(tag);
+                      onSetEditingTagValue(tag.name); // Now JavaScript knows what 'tag' is!
                     }}
                   >
-                    {tag}
+                    {tag.name}
                   </button>
                 );
               })}

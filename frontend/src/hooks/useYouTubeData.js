@@ -30,6 +30,8 @@ export function useYouTubeData() {
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [editingTagIndex, setEditingTagIndex] = useState(null); // Tracks which tag is being edited
   const [editingTagValue, setEditingTagValue] = useState('');
+
+
   const tagsPopup = () => setIsTagsModalOpen(true);
   const closeTagsPopup = () => {
     setIsTagsModalOpen(false);
@@ -101,35 +103,62 @@ export function useYouTubeData() {
   };
 
   // ADD TAGS
-  const handleUpdateTag = (index, newValue) => {
-    if (!state.currentVideo) return;
+  const handleUpdateTag = async (index, newValue) => {
+    if (!currentVideo) return;
     
     // Create a copy of the current video's tags
-    const updatedTags = [...(state.currentVideo.tags || [])];
+    const currentTagNames = (currentVideo.tags || []).map(tag => tag.name);
     
-    if (newValue.trim() === '') {
+    if (newValue.trim() === '' || newValue.trim() === 'New Tag') {
       // If empty, remove the tag
-      updatedTags.splice(index, 1);
+      currentTagNames.splice(index, 1);
     } else {
-      updatedTags[index] = newValue.trim();
+      currentTagNames[index] = newValue.trim();
     }
 
-    // Code here to update your master state.playlists or state.currentVideo
-    // Example: updateVideoInState(state.currentVideo.id, { tags: updatedTags });
+    const res = await fetch(`${API_BASE}/videos/${currentVideo.id}/tags`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(currentTagNames) // Sends ["React", "Java"]
+    });
+
+    if (res.ok) {
+      await fetchData(); // This now has a 'res' to check!
+    }
     
+    console.log(`UPDATE   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
     setEditingTagIndex(null);
   };
+  
+  // FIX LOGIC HERE ITS HORRIBLE
+  const handleAddTag = async () => {
+    if (!currentVideo) return;
 
-  const handleAddTag = () => {
-    if (!state.currentVideo) return;
-    const currentTags = state.currentVideo.tags || [];
+    const currentTagNames = (currentVideo.tags || []).map(tag => tag.name);
     
     // Add a placeholder tag and instantly set it to editing mode
-    const updatedTags = [...currentTags, 'New Tag'];
-    // updateVideoInState(state.currentVideo.id, { tags: updatedTags });
+    const updatedTagNames = [...currentTagNames, 'New Tag'];
     
-    setEditingTagIndex(updatedTags.length - 1);
-    setEditingTagValue('New Tag');
+    const res = await fetch(`${API_BASE}/videos/${currentVideo.id}/tags`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedTagNames)
+    });
+
+    console.log(`ADD   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
+
+    if (res.ok) {
+      // 4. Reload your master state from the database so the video actually has the new tag
+      await fetchData(); 
+      
+      // 5. Open editing mode on the newly added item at the very end of the list
+      setEditingTagIndex(updatedTagNames.length - 1);
+      setEditingTagValue('New Tag');
+    }
   };
 
   const selectVideo = (video) => {
