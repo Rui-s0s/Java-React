@@ -33,8 +33,19 @@ function App() {
             dislikes={state.currentVideo.dislikes || 0}
             onLike={() => actions.handleLikeDislike('like')}
             onDislike={() => actions.handleLikeDislike('dislike')}
+            onToggleTags={() => actions.tagsPopup()}
             showChat={state.showChat}
             onToggleChat={() => actions.setShowChat(!state.showChat)}
+            
+            isTagsModalOpen={state.isTagsModalOpen}
+            onToggleTags={() => actions.tagsPopup()}
+            onCloseTags={() => actions.closeTagsPopup()}
+            editingTagIndex={state.editingTagIndex}
+            editingTagValue={state.editingTagValue}
+            onSetEditingTagIndex={actions.setEditingTagIndex}
+            onSetEditingTagValue={actions.setEditingTagValue}
+            onUpdateTag={actions.handleUpdateTag}
+            onAddTag={actions.handleAddTag}
           />
         ) : (
           <div style={{ color: '#aaa', padding: '40px', textAlign: 'center', gridColumn: '1 / -1' }}>

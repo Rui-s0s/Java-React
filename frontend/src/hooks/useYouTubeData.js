@@ -26,6 +26,16 @@ export function useYouTubeData() {
   // Search playlist state
   const [searchQuery, setSearchQuery] = useState('');
 
+  // THIS FOR TAGS
+  const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
+  const [editingTagIndex, setEditingTagIndex] = useState(null); // Tracks which tag is being edited
+  const [editingTagValue, setEditingTagValue] = useState('');
+  const tagsPopup = () => setIsTagsModalOpen(true);
+  const closeTagsPopup = () => {
+    setIsTagsModalOpen(false);
+    setEditingTagIndex(null);
+  };
+
   // 1. Fetch All Playlists (Spring returns a List<Playlist>)
   const fetchData = async () => {
     try {
@@ -88,6 +98,38 @@ export function useYouTubeData() {
     if (res.ok) {
       await fetchData(); // This now has a 'res' to check!
     }
+  };
+
+  // ADD TAGS
+  const handleUpdateTag = (index, newValue) => {
+    if (!state.currentVideo) return;
+    
+    // Create a copy of the current video's tags
+    const updatedTags = [...(state.currentVideo.tags || [])];
+    
+    if (newValue.trim() === '') {
+      // If empty, remove the tag
+      updatedTags.splice(index, 1);
+    } else {
+      updatedTags[index] = newValue.trim();
+    }
+
+    // Code here to update your master state.playlists or state.currentVideo
+    // Example: updateVideoInState(state.currentVideo.id, { tags: updatedTags });
+    
+    setEditingTagIndex(null);
+  };
+
+  const handleAddTag = () => {
+    if (!state.currentVideo) return;
+    const currentTags = state.currentVideo.tags || [];
+    
+    // Add a placeholder tag and instantly set it to editing mode
+    const updatedTags = [...currentTags, 'New Tag'];
+    // updateVideoInState(state.currentVideo.id, { tags: updatedTags });
+    
+    setEditingTagIndex(updatedTags.length - 1);
+    setEditingTagValue('New Tag');
   };
 
   const selectVideo = (video) => {
@@ -228,7 +270,11 @@ export function useYouTubeData() {
       isCreatingPlaylist,
       editingPlaylistId,
       newPlaylistName,
-      searchQuery               // THIS FILTERS
+      searchQuery,               // THIS FILTERS
+
+      isTagsModalOpen,
+      editingTagIndex,
+      editingTagValue,
     },
     actions: {
       setShowChat,
@@ -247,7 +293,14 @@ export function useYouTubeData() {
       startEditVideo,
       deleteVideo,
       handleVideoSubmit,
-      setSearchQuery        // THIS FILTERS TOO 
+      setSearchQuery,        // THIS FILTERS TOO 
+
+      tagsPopup,
+      closeTagsPopup,
+      setEditingTagIndex,
+      setEditingTagValue,
+      handleUpdateTag,
+      handleAddTag
     }
   };
 }

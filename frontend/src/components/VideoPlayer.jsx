@@ -1,7 +1,25 @@
 import React from 'react';
 import styles from './VideoPlayer.module.css';
 
-const VideoPlayer = ({ video, likes, dislikes, onLike, onDislike, showChat, onToggleChat }) => {
+const VideoPlayer = ({ 
+  video, 
+  likes, 
+  dislikes, 
+  onLike, 
+  onDislike, 
+  showChat, 
+  onToggleChat,
+  // --- NEW TAG PROPS ---
+  isTagsModalOpen,
+  onToggleTags,       // This opens the popup
+  onCloseTags,        // This closes the popup
+  editingTagIndex,
+  editingTagValue,
+  onSetEditingTagIndex,
+  onSetEditingTagValue,
+  onUpdateTag,
+  onAddTag
+  }) => {
   const handleShare = () => {
     if (video?.url) {
       navigator.clipboard.writeText(video.url)
@@ -30,10 +48,61 @@ const VideoPlayer = ({ video, likes, dislikes, onLike, onDislike, showChat, onTo
         <button className={styles.actionBtn} onClick={handleShare}>
           ↪️ Share
         </button>
+        <button className={styles.actionBtn} onClick={onToggleTags}>
+          🏷️ Edit tags
+        </button>
         <button className={styles.actionBtn} onClick={onToggleChat}>
           {showChat ? '❌ Hide Chat' : '💬 Show Chat'}
         </button>
       </div>
+
+      {isTagsModalOpen && video && (
+        <div className={styles.modalBackdrop} onClick={onCloseTags}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Edit Video Tags</h3>
+              <button className={styles.closeBtn} onClick={onCloseTags}>&times;</button>
+            </div>
+            
+            <div className={styles.tagsContainer}>
+              {(video.tags || []).map((tag, index) => {
+                const isEditingThisTag = editingTagIndex === index;
+
+                return isEditingThisTag ? (
+                  <input
+                    key={index}
+                    autoFocus
+                    type="text"
+                    className={styles.tagInputField}
+                    value={editingTagValue}
+                    onChange={(e) => onSetEditingTagValue(e.target.value)}
+                    onBlur={() => onUpdateTag(index, editingTagValue)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') onUpdateTag(index, editingTagValue);
+                      if (e.key === 'Escape') onSetEditingTagIndex(null);
+                    }}
+                  />
+                ) : (
+                  <button
+                    key={index}
+                    className={styles.tagButton}
+                    onClick={() => {
+                      onSetEditingTagIndex(index);
+                      onSetEditingTagValue(tag);
+                    }}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+
+              <button className={styles.addTagBtn} onClick={onAddTag}>
+                + Add Tag
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

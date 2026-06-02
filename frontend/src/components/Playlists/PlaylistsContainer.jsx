@@ -28,13 +28,12 @@ const PlaylistsContainer = ({
   onNewVideoLinkChange,
   onVideoSubmit,
   editingVideoId
-}) => {
+  }) => {
 
   const filteredPlaylists = !searchQuery.trim() 
-    ? playlists 
-    : playlists.filter((playlist) => 
-        playlist.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    ? playlists : playlists.filter((playlist) => 
+        playlist.name.toLowerCase().includes(searchQuery.toLowerCase()
+  ));
 
     
   return (
