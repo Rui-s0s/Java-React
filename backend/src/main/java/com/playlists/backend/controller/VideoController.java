@@ -2,20 +2,28 @@ package com.playlists.backend.controller;
 
 import com.playlists.backend.entity.Video;
 import com.playlists.backend.entity.Comment;
+import com.playlists.backend.entity.Tag;
+import com.playlists.backend.repository.TagRepository;
 import com.playlists.backend.repository.VideoRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/videos")
 public class VideoController {
 
     private final VideoRepository videoRepository;
+    private final TagRepository tagRepository;
 
-    public VideoController(VideoRepository videoRepository) {
+
+    public VideoController(VideoRepository videoRepository, TagRepository tagRepository) {
         this.videoRepository = videoRepository;
+        this.tagRepository = tagRepository;
     }
 
     @GetMapping("/{id}")
@@ -73,5 +81,24 @@ public class VideoController {
         
         video.addDislike();
         return videoRepository.save(video);
+    }
+
+    @PutMapping("/{id}/tags")
+    public Video updateVideoTags(@PathVariable Long id, @RequestBody List<String> tagNames) {
+        return videoRepository.findById(id)
+                .map(video -> {
+                    Set<Tag> managedTags = new HashSet<>();
+                    
+                    for (String name : tagNames) {
+                        // Find existing tag or create a brand new one if it's unique
+                        Tag tag = tagRepository.findByNameIgnoreCase(name.trim())
+                                .orElseGet(() -> tagRepository.save(new Tag(name.trim())));
+                        managedTags.add(tag);
+                    }
+                    
+                    video.setTags(managedTags);
+                    return videoRepository.save(video);
+                })
+                .orElseThrow(() -> new RuntimeException("Video not found"));
     }
 }

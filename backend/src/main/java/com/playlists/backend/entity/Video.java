@@ -3,9 +3,13 @@ package com.playlists.backend.entity;
 import jakarta.persistence.*; // This imports @Entity, @Id, @GeneratedValue, etc.
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 @Entity
 public class Video {
@@ -25,6 +29,16 @@ public class Video {
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>(); 
+
+    // THIS CONTAINS TAGS
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "video_tag_mapping",
+        joinColumns = @JoinColumn(name = "video_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @JsonIgnoreProperties("videos") // Prevents infinite JSON loops
+    private Set<Tag> tags = new HashSet<>();
 
     // Standard Boilerplate (Getters and Setters)
     public Long getId() { return id; }
@@ -54,4 +68,7 @@ public class Video {
     public List<Comment> getComments() {
         return comments;
     }
+
+    public Set<Tag> getTags() { return tags; }
+    public void setTags(Set<Tag> tags) { this.tags = tags; }
 }
