@@ -127,12 +127,13 @@ export function useYouTubeData() {
     if (res.ok) {
       await fetchData(); // This now has a 'res' to check!
     }
-    
+    // DEBUG STUFF
     console.log(`UPDATE   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
     setEditingTagIndex(null);
   };
   
   // FIX LOGIC HERE ITS HORRIBLE
+  // ARREGLAR EVENTUALMENTE
   const handleAddTag = async () => {
     if (!currentVideo) return;
 
@@ -149,6 +150,7 @@ export function useYouTubeData() {
       body: JSON.stringify(updatedTagNames)
     });
 
+    // DEBUG STUFF
     console.log(`ADD   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
 
     if (res.ok) {

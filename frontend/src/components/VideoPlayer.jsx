@@ -55,6 +55,16 @@ const VideoPlayer = ({
           {showChat ? '❌ Hide Chat' : '💬 Show Chat'}
         </button>
       </div>
+      <div className={styles.tagSection}>
+         {(video.tags || []).map((tag, index) => {
+          return (
+            <ul key={index}>
+              #{tag.name}
+            </ul>
+          )
+         }
+         )}
+      </div>
 
       {isTagsModalOpen && video && (
         <div className={styles.modalBackdrop} onClick={onCloseTags}>
