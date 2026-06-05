@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback} from 'react';
 
 // Make sure this matches your Vite proxy or Spring server URL
 const API_BASE = '/api'; 
@@ -30,6 +30,7 @@ export function useYouTubeData() {
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
   const [editingTagIndex, setEditingTagIndex] = useState(null); // Tracks which tag is being edited
   const [editingTagValue, setEditingTagValue] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
 
 
   const tagsPopup = () => setIsTagsModalOpen(true);
@@ -38,37 +39,49 @@ export function useYouTubeData() {
     setEditingTagIndex(null);
   };
 
-  // 1. Fetch All Playlists (Spring returns a List<Playlist>)
-  const fetchData = async () => {
+  // 2. Wrap fetchData in useCallback so it handles filtering dynamically
+  const fetchData = useCallback(async (tagsToFilter = []) => {
     try {
-      const res = await fetch(`${API_BASE}/playlists`);
-      const data = await res.json();
-      setPlaylists(data);
-      
-      // If we are currently watching a video, find its NEW version in the data
-      if (currentVideo) {
-        const freshVideo = data
-          .flatMap(pl => pl.videos)
-          .find(v => v.id === currentVideo.id);
-        
-        if (freshVideo) {
-          setCurrentVideo(freshVideo); // This forces likes/comments to update
-        }
-      } else if (data.length > 0) {
-        const firstPlaylistWithVideos = data.find(pl => pl.videos?.length > 0);
-        if (firstPlaylistWithVideos) setCurrentVideo(firstPlaylistWithVideos.videos[0]);
+      let url = `${API_BASE}/playlists`;
+      if (tagsToFilter.length > 0) {
+        url += `?tags=${encodeURIComponent(tagsToFilter.join(','))}`;
       }
-      
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // 1. Update your playlists slice
+      setPlaylists(data);
+
+      // 2. Calculate the fresh version of your current video
+      // We pass a functional updater to `setCurrentVideo` so we safely read the latest value
+      setCurrentVideo(prevVideo => {
+        let nextCurrentVideo = prevVideo;
+        
+        if (nextCurrentVideo) {
+          const freshVideo = data.flatMap(pl => pl.videos).find(v => v.id === nextCurrentVideo.id);
+          if (freshVideo) nextCurrentVideo = freshVideo;
+        } else if (data.length > 0) {
+          const firstPlWithVideos = data.find(pl => pl.videos?.length > 0);
+          if (firstPlWithVideos) nextCurrentVideo = firstPlWithVideos.videos[0];
+        }
+        
+        return nextCurrentVideo;
+      });
+
+      // 3. Turn off the loading state
       setLoading(false);
+
     } catch (err) {
       console.error("Spring Backend error:", err);
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
+
+  // 3. Trigger fetchData whenever the selectedTags state changes
+  useEffect(() => {
+    fetchData(selectedTags);
+  }, [selectedTags, fetchData]);
 
   // 2. Add Comment (Updated for Spring /comments endpoint)
   const handleSendMessage = async (text) => {
@@ -133,7 +146,7 @@ export function useYouTubeData() {
   };
   
   // FIX LOGIC HERE ITS HORRIBLE
-  // ARREGLAR EVENTUALMENTE
+  // Cuando le das a new tag despues cambia uno de los tags ya existentes a "New Tag"
   const handleAddTag = async () => {
     if (!currentVideo) return;
 
@@ -301,11 +314,12 @@ export function useYouTubeData() {
       isCreatingPlaylist,
       editingPlaylistId,
       newPlaylistName,
-      searchQuery,               // THIS FILTERS
+      searchQuery,               
 
       isTagsModalOpen,
       editingTagIndex,
       editingTagValue,
+      selectedTags,
     },
     actions: {
       setShowChat,
@@ -324,14 +338,15 @@ export function useYouTubeData() {
       startEditVideo,
       deleteVideo,
       handleVideoSubmit,
-      setSearchQuery,        // THIS FILTERS TOO 
+      setSearchQuery,       
 
       tagsPopup,
       closeTagsPopup,
       setEditingTagIndex,
       setEditingTagValue,
       handleUpdateTag,
-      handleAddTag
+      handleAddTag,
+      setSelectedTags,
     }
   };
 }

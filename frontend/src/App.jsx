@@ -20,9 +20,11 @@ function App() {
 
   return (
     <div className="app-container">
-      <Navbar 
+      <Navbar
       searchQuery={state.searchQuery} 
-      setSearchQuery={actions.setSearchQuery} 
+      setSearchQuery={actions.setSearchQuery}
+      selectedTags={state.selectedTags}
+      onApplyFilters={actions.setSelectedTags} 
       />
 
       <main className={`main-layout ${!state.showChat ? 'hide-chat' : ''}`}>
@@ -87,7 +89,7 @@ function App() {
           onNewVideoLinkChange={actions.setNewVideoLink}
           onVideoSubmit={actions.handleVideoSubmit}
           editingVideoId={state.editingVideoId}
-          searchQuery={state.searchQuery}                        // THIS SHOULD FILTER
+          searchQuery={state.searchQuery}                        
         />
       </main>
     </div>

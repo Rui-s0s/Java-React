@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 
-const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
+const Navbar = ({ 
+  onToggleLayout,                   // THIS WILL CHANGE LAYOUT EVENTUALLY 
+  searchQuery,
+  setSearchQuery,
+  selectedTags = [],
+  onApplyFilters, 
+}) => {
+  // These are for tags
+  const [allTags, setAllTags] = useState([]);
+  const [tempSelectedTags, setTempSelectedTags] = useState([]);
+
   // State to track if the dropdown is open
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -37,18 +47,44 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
 
   // Handle menu clicks
   const handleItemClick = (modalType) => {
-    setActiveModal(modalType)
-    setIsMenuOpen(false)
-  }
+    setActiveModal(modalType);
+    setIsMenuOpen(false);
+
+    if (modalType === 'filter') {
+      // Sync checkboxes with currently active app filters
+      setTempSelectedTags(selectedTags);
+
+      fetch('api/tags') // Adjust to match your API_BASE
+        .then(res => res.json())
+        .then(data => setAllTags(data))
+        .catch(err => console.error("Error fetching tags:", err));
+    }
+  };
 
   const closeModal = () => setActiveModal(null);
+
+  // Handles adding or removing tags from the temporary modal staging list
+  const handleTagToggle = (tagName) => {
+    setTempSelectedTags((prev) => 
+      prev.includes(tagName) 
+        ? prev.filter((t) => t !== tagName) 
+        : [...prev, tagName]
+    );
+  };
+
+  // Sends the verified checkboxes up to App.jsx to fire the backend playlist search
+  const handleApplyFilters = () => {
+    if (onApplyFilters) {
+      onApplyFilters(tempSelectedTags);
+    }
+    closeModal();
+  };
 
   // TEST Save changes
   const handleSaveChanges = () => {
     localStorage.setItem('setting_darkMode', darkMode);
     localStorage.setItem('setting_autoplay', autoplay);
     closeModal();
-    
   };
 
   return (
@@ -62,10 +98,11 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
       <div className={styles.centerSection}>
         <div className={styles.searchContainer}>
           <input 
-          type="text" placeholder="Search" 
-          className={styles.searchInput} 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+            type="text" 
+            placeholder="Search" 
+            className={styles.searchInput} 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <button className={styles.searchButton}>
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -86,14 +123,15 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
 
           {isMenuOpen && (
             <div className={styles.dropdownMenu}>
-              {/* 3. Pass the 'settings' identifier on click */}
               <div className={styles.dropdownItem} onClick={() => handleItemClick('settings')}>
                 Settings
+              </div>
+              <div className={styles.dropdownItem} onClick={() => handleItemClick('filter')}>
+                Filters
               </div>
               <div className={styles.dropdownItem} onClick={() => handleItemClick('help')}>
                 Help
               </div>
-              <div className={styles.dropdownItem}>Feedback</div>
             </div>
           )}
         </div>
@@ -101,7 +139,7 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
         <div className={styles.userAvatar}>{localStorage.getItem('chat_username') || '?'}</div>
       </div>
 
-      {/* 4. Settings Modal Render */}
+      {/* Settings Modal */}
       {activeModal === 'settings' && (
         <div className={styles.modalBackdrop} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -112,7 +150,6 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
             <div className={styles.modalBody}>
               <p>Customize your experience here:</p>
               
-              {/* Controlled Dark Mode Checkbox */}
               <label className={styles.settingOption}>
                 <input 
                   type="checkbox" 
@@ -121,7 +158,6 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
                 /> Dark Mode (Always On)
               </label>
               
-              {/* Controlled Autoplay Checkbox */}
               <label className={styles.settingOption}>
                 <input 
                   type="checkbox" 
@@ -130,14 +166,62 @@ const Navbar = ({ onToggleLayout, searchQuery, setSearchQuery }) => {
                 /> Autoplay Videos
               </label>
               
-              {/* --- NEW: Trigger save function on click --- */}
               <button className={styles.saveButton} onClick={handleSaveChanges}>Save Changes</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 5. Quick Help Modal Render (Example of scaling) */}
+      {/* Filters Modal */}
+      {activeModal === 'filter' && (
+        <div className={styles.modalBackdrop} onClick={closeModal}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Filter Content</h2>
+              <button className={styles.closeButton} onClick={closeModal}>&times;</button>
+            </div>
+            <div className={styles.modalBody}>
+              
+              <h3>Filter by Tags</h3>
+              <div className={styles.tagFilterGroup} style={{ marginBottom: '20px', maxHeight: '150px', overflowY: 'auto' }}>
+                {allTags.length === 0 ? (
+                  <p style={{ color: '#aaa' }}>Loading tags or no tags found...</p>
+                ) : (
+                  allTags.map(tag => (
+                    <label key={tag.id} className={styles.settingOption} style={{ display: 'block', margin: '8px 0', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={tempSelectedTags.includes(tag.name)}
+                        onChange={() => handleTagToggle(tag.name)}
+                      /> {tag.name}
+                    </label>
+                  ))
+                )}
+              </div>
+              
+              <hr style={{ border: '0.5px solid #333', margin: '15px 0' }} />
+
+              <h3>Quick Actions</h3>
+              <button 
+                className={styles.saveButton} 
+                style={{ background: '#333', marginBottom: '15px' }}
+                onClick={() => setTempSelectedTags([])}
+              >
+                Clear Selections
+              </button>
+              
+              <button 
+                className={styles.saveButton} 
+                onClick={handleApplyFilters}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
       {activeModal === 'help' && (
         <div className={styles.modalBackdrop} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
