@@ -17,11 +17,26 @@ public class PlaylistController {
         this.playlistRepository = playlistRepository;
     }
 
+    // GET /api/playlists
+    // GET /api/playlists?tags=React,JavaScript
+    // GET /api/playlists?tags=React&tags=JavaScript
     @GetMapping
-    public List<Playlist> getAllPlaylists() {
+    public List<Playlist> getPlaylists(@RequestParam(required = false) List<String> tags) {
+        // If the tags list is provided and isn't empty, filter by it
+        if (tags != null && !tags.isEmpty()) {
+            List<Playlist> playlists = playlistRepository.findPlaylistsByTagNames(tags);
+
+            // Filter the nested videos
+            for (Playlist playlist : playlists) {
+                playlist.getVideos().removeIf(video -> 
+                    video.getTags().stream().noneMatch(tag -> tags.contains(tag.getName()))
+                );
+            }
+            return playlists;
+        }
+        // Otherwise, return all playlists as usual
         return playlistRepository.findAll();
     }
-
     @PostMapping
     public Playlist createPlaylist(@RequestBody Playlist playlist) {
         return playlistRepository.save(playlist);
