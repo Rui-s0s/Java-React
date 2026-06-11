@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback} from 'react';
 
-// Make sure this matches your Vite proxy or Spring server URL
 const API_BASE = '/api'; 
 
 export function useYouTubeData() {
+  // General State
   const [playlists, setPlaylists] = useState([]);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [showChat, setShowChat] = useState(true);
@@ -13,7 +13,7 @@ export function useYouTubeData() {
   const [addingToPlaylist, setAddingToPlaylist] = useState(null);
   const [editingVideoId, setEditingVideoId] = useState(null);
   const [newVideoTitle, setNewVideoTitle] = useState('');
-  const [newVideoLink, setNewVideoLink] = useState(''); // Maps to 'url' in Spring
+  const [newVideoLink, setNewVideoLink] = useState('');
   const [step, setStep] = useState(1);
 
   // Playlist Form State
@@ -26,9 +26,9 @@ export function useYouTubeData() {
   // Search playlist state
   const [searchQuery, setSearchQuery] = useState('');
 
-  // THIS FOR TAGS
+  // State for tags
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-  const [editingTagIndex, setEditingTagIndex] = useState(null); // Tracks which tag is being edited
+  const [editingTagIndex, setEditingTagIndex] = useState(null);
   const [editingTagValue, setEditingTagValue] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
 
@@ -50,11 +50,8 @@ export function useYouTubeData() {
       const res = await fetch(url);
       const data = await res.json();
 
-      // 1. Update your playlists slice
       setPlaylists(data);
 
-      // 2. Calculate the fresh version of your current video
-      // We pass a functional updater to `setCurrentVideo` so we safely read the latest value
       setCurrentVideo(prevVideo => {
         let nextCurrentVideo = prevVideo;
         
@@ -69,7 +66,6 @@ export function useYouTubeData() {
         return nextCurrentVideo;
       });
 
-      // 3. Turn off the loading state
       setLoading(false);
 
     } catch (err) {
@@ -78,12 +74,11 @@ export function useYouTubeData() {
     }
   }, []);
 
-  // 3. Trigger fetchData whenever the selectedTags state changes
   useEffect(() => {
     fetchData(selectedTags);
   }, [selectedTags, fetchData]);
 
-  // 2. Add Comment (Updated for Spring /comments endpoint)
+
   const handleSendMessage = async (text) => {
     if (!currentVideo) return;
 
@@ -101,7 +96,7 @@ export function useYouTubeData() {
     if (res.ok) await fetchData();
   };
 
-  // 3. Like/Dislike (Updated for Spring @PatchMapping)
+  
   const handleLikeDislike = async (type) => {
     if (!currentVideo) return;
     const endpoint = type === 'like' ? 'like' : 'dislike';
@@ -111,7 +106,7 @@ export function useYouTubeData() {
     });
 
     if (res.ok) {
-      await fetchData(); // This now has a 'res' to check!
+      await fetchData(); 
     }
   };
 
@@ -134,11 +129,11 @@ export function useYouTubeData() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(currentTagNames) // Sends ["React", "Java"]
+      body: JSON.stringify(currentTagNames) 
     });
 
     if (res.ok) {
-      await fetchData(); // This now has a 'res' to check!
+      await fetchData(); 
     }
     // DEBUG STUFF
     console.log(`UPDATE   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
@@ -164,13 +159,13 @@ export function useYouTubeData() {
     });
 
     // DEBUG STUFF
-    console.log(`ADD   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
+    console.log(`STILL NOT RES OK   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
 
     if (res.ok) {
-      // 4. Reload your master state from the database so the video actually has the new tag
       await fetchData(); 
       
       // 5. Open editing mode on the newly added item at the very end of the list
+      console.log(`RES OK   ID: ${editingTagIndex}  VALUE: ${editingTagValue}`)
       setEditingTagIndex(updatedTagNames.length - 1);
       setEditingTagValue('New Tag');
     }
@@ -187,7 +182,6 @@ export function useYouTubeData() {
     );
   };
 
-  // 4. Playlist Submission (Spring paths)
   const handlePlaylistSubmit = async (e) => {
     if (e.key === 'Enter' && newPlaylistName.trim()) {
       const url = editingPlaylistId ? `${API_BASE}/playlists/${editingPlaylistId}` : `${API_BASE}/playlists`;
@@ -216,12 +210,12 @@ export function useYouTubeData() {
     e.stopPropagation();
     if (window.confirm("Delete this playlist?")) {
       const res = await fetch(`${API_BASE}/playlists/${id}`, { method: 'DELETE' });
-      // Important: Spring returns 204 No Content, don't try to .json() it
+      
       if (res.ok) await fetchData();
     }
   };
 
-  // 5. Video Submission (Maps 'link' to 'url')
+
   const handleVideoSubmit = async (e, playlistId) => {
     if (e.key === 'Enter') {
       if (step === 1 && newVideoTitle.trim()) {
@@ -237,7 +231,7 @@ export function useYouTubeData() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             title: newVideoTitle, 
-            url: newVideoLink // Changed from 'link' to 'url'
+            url: newVideoLink 
           })
         });
 
@@ -257,7 +251,6 @@ export function useYouTubeData() {
     }
   };
 
-  // Helper logic for video editing/deletion
   const startEditPlaylist = (e, pl) => {
     e.stopPropagation();
     setEditingPlaylistId(pl.id);
@@ -277,7 +270,7 @@ export function useYouTubeData() {
     setAddingToPlaylist(playlistId);
     setEditingVideoId(video.id);
     setNewVideoTitle(video.title);
-    setNewVideoLink(video.url); // Use .url from Spring
+    setNewVideoLink(video.url);
     setStep(1);
   };
 

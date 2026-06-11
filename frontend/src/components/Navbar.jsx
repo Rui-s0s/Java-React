@@ -46,19 +46,23 @@ const Navbar = ({
   }, []);
 
   // Handle menu clicks
-  const handleItemClick = (modalType) => {
+  const handleItemClick = async (modalType) => {
     setActiveModal(modalType);
     setIsMenuOpen(false);
 
     if (modalType === 'filter') {
-      // Sync checkboxes with currently active app filters
-      setTempSelectedTags(selectedTags);
+    setTempSelectedTags(selectedTags);
 
-      fetch('api/tags') // Adjust to match your API_BASE
-        .then(res => res.json())
-        .then(data => setAllTags(data))
-        .catch(err => console.error("Error fetching tags:", err));
+    try {
+      const res = await fetch('api/tags');
+      const data = await res.json();
+      
+      setAllTags(data);
+      
+    } catch (err) {
+      console.error("Error fetching tags:", err);
     }
+  }
   };
 
   const closeModal = () => setActiveModal(null);
@@ -72,7 +76,6 @@ const Navbar = ({
     );
   };
 
-  // Sends the verified checkboxes up to App.jsx to fire the backend playlist search
   const handleApplyFilters = () => {
     if (onApplyFilters) {
       onApplyFilters(tempSelectedTags);

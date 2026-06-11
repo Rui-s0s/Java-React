@@ -9,10 +9,10 @@ const VideoPlayer = ({
   onDislike, 
   showChat, 
   onToggleChat,
-  // --- NEW TAG PROPS ---
+
   isTagsModalOpen,
-  onToggleTags,       // This opens the popup
-  onCloseTags,        // This closes the popup
+  onToggleTags,      
+  onCloseTags,        
   editingTagIndex,
   editingTagValue,
   onSetEditingTagIndex,
@@ -98,7 +98,7 @@ const VideoPlayer = ({
                     className={styles.tagButton}
                     onClick={() => {
                       onSetEditingTagIndex(index);
-                      onSetEditingTagValue(tag.name); // Now JavaScript knows what 'tag' is!
+                      onSetEditingTagValue(tag.name); 
                     }}
                   >
                     {tag.name}

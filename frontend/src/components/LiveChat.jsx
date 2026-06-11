@@ -3,7 +3,6 @@ import styles from './LiveChat.module.css';
 
 const LiveChat = ({ messages, onSendMessage }) => {
   const [localInput, setLocalInput] = useState('');
-  // Check if we already have a user in localStorage
   const [userName, setUserName] = useState(localStorage.getItem('chat_username') || '');
   const messagesEndRef = useRef(null);
 
