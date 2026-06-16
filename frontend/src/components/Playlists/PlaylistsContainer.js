@@ -66,7 +66,7 @@ export class PlaylistsContainer {
       playlist,
       isExpanded: expandedPlaylists.includes(playlist.id),
       isEditing: editingPlaylistId === playlist.id,
-      editingName: this.props.newPlaylistName, // Corrected from editingName to newPlaylistName
+      editingName: this.props.newPlaylistName,
       
       onToggle: this.props.onTogglePlaylist,
       onStartEdit: this.props.onStartEditPlaylist,

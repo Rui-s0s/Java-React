@@ -9,6 +9,7 @@ import './App.css';
 
 let state = {
   playlists: [], // Will be loaded from backend
+  tags: [],     // THIS WILL BE FILLED WITH TAGS BACKEND
   username: localStorage.getItem('yt_clone_username') || null,
   currentVideo: null,
   currentVideoComments: [], // Comments for the currently playing video
@@ -20,9 +21,13 @@ let state = {
   addingToPlaylist: null,
   editingVideoId: null,
   newVideoTitle: '',
-  newVideoUrl: '', // Changed from newVideoLink
+  newVideoUrl: '',
   step: 1,
-  isLoading: true, // New loading state
+  isLoading: true, 
+  searchTag: '',
+  isTagsModalOpen: false,
+  editingTagIndex: null,
+  editingTagValue: '',
 };
 
 // --- COMPONENT INSTANCES ---
@@ -34,17 +39,16 @@ const root = document.getElementById('app-root');
 
 // --- THE UPDATE LOOP (The Engine) ---
 async function updateUI() {
-  // No localStorage.setItem for playlists here, as data comes from backend
-
   const mainLayout = document.querySelector('.main-layout');
+
   if (!mainLayout) {
-    // Initial render or if something went wrong with the shell
     return renderShell();
   }
 
-  // 1. Update Video Player
+  // Video Player
   if (state.currentVideo) {
     const playerProps = getPlayerProps();
+
     if (!player) {
       player = new VideoPlayer(playerProps);
       mainLayout.prepend(player.container);
@@ -56,11 +60,18 @@ async function updateUI() {
     player = null;
   }
 
-  // 2. Update Live Chat
+  // Live Chat
   if (state.showChat && state.currentVideo) {
-    const comments = state.currentVideoComments; // Use fetched comments
+    const comments = state.currentVideoComments;
+
     if (!chat) {
-      chat = new LiveChat(comments, handleSendMessage, state.username, handleSetUsername);
+      chat = new LiveChat(
+        comments,
+        handleSendMessage,
+        state.username,
+        handleSetUsername
+      );
+
       mainLayout.appendChild(chat.container);
     } else {
       chat.update(comments, state.username);
@@ -70,7 +81,7 @@ async function updateUI() {
     chat = null;
   }
 
-  // 3. Update Playlists
+  // Playlists
   if (playlistsUI) {
     playlistsUI.update(getPlaylistProps());
   }
@@ -178,8 +189,79 @@ function resetVideoForm() {
   state.addingToPlaylist = null;
   state.editingVideoId = null;
   state.newVideoTitle = '';
-  state.newVideoUrl = ''; // Changed from newVideoLink
+  state.newVideoUrl = ''; 
   state.step = 1;
+}
+
+// --- TAG MODAL LOGIC HANDLERS ---
+
+function handleToggleTags() {
+  state.isTagsModalOpen = !state.isTagsModalOpen;
+  // Reset fields when opening/closing
+  state.editingTagIndex = null;
+  state.editingTagValue = '';
+  updateUI();
+}
+
+function handleCloseTags() {
+  state.isTagsModalOpen = false;
+  state.editingTagIndex = null;
+  state.editingTagValue = '';
+  updateUI();
+}
+
+async function handleUpdateTag(index, newValue) {
+  if (!state.currentVideo) return;
+
+  const cleanValue = newValue.trim();
+
+  const currentTagNames =
+    (state.currentVideo.tags || [])
+      .map(tag => tag.name);
+
+  if (cleanValue === '') {
+    state.editingTagIndex = null;
+    state.editingTagValue = '';
+    updateUI();
+    return;
+  }
+
+  // New tag
+  if (index >= currentTagNames.length) {
+    currentTagNames.push(cleanValue);
+  }
+  // Existing tag
+  else {
+    currentTagNames[index] = cleanValue;
+  }
+
+  try {
+    await api.updateVideoTags(
+      state.currentVideo.id,
+      currentTagNames
+    );
+
+    await fetchCurrentVideoData(
+      state.currentVideo.id
+    );
+
+    state.editingTagIndex = null;
+    state.editingTagValue = '';
+
+    updateUI();
+  } catch (error) {
+    console.error("Error updating tags:", error);
+    alert("Failed to update tags.");
+  }
+}
+
+function handleAddTag() {
+  if (!state.currentVideo) return;
+
+  state.editingTagIndex = state.currentVideo.tags.length;
+  state.editingTagValue = '';
+
+  updateUI();
 }
 
 // --- INITIAL SHELL RENDER ---
@@ -187,16 +269,41 @@ function renderShell() {
   root.innerHTML = `
     <div class="app-container">
       <div id="nav-target"></div>
+
       <main class="main-layout ${!state.showChat ? 'hide-chat' : ''}">
         <div id="playlists-target"></div>
       </main>
     </div>
   `;
 
-  document.getElementById('nav-target').innerHTML = Navbar();
+  // Navbar
+  document.getElementById('nav-target').innerHTML =
+    Navbar(state.searchTag);
 
-  playlistsUI = new PlaylistsContainer(getPlaylistProps());
-  document.getElementById('playlists-target').appendChild(playlistsUI.container);
+  const searchInput =
+    document.getElementById('tag-search');
+
+  searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      state.searchTag = e.target.value.trim();
+      updateUI();
+    }
+
+    if (e.key === 'Escape') {
+      e.target.value = '';
+      state.searchTag = '';
+      updateUI();
+    }
+  });
+
+  // Playlists
+  playlistsUI = new PlaylistsContainer(
+    getPlaylistProps()
+  );
+
+  document
+    .getElementById('playlists-target')
+    .appendChild(playlistsUI.container);
 
   updateUI();
 }
@@ -208,16 +315,46 @@ function getPlayerProps() {
     video: state.currentVideo,
     likes: state.currentVideo?.likes || 0,
     dislikes: state.currentVideo?.dislikes || 0,
+    showChat: state.showChat,
     onLike: () => handleLikeDislike('like'),
     onDislike: () => handleLikeDislike('dislike'),
-    showChat: state.showChat,
-    onToggleChat: () => { state.showChat = !state.showChat; updateUI(); }
+    onToggleChat: () => { state.showChat = !state.showChat; updateUI(); },
+
+    // PASSING MODAL VARIABLES & ACTIONS DOWN
+    isTagsModalOpen: state.isTagsModalOpen,
+    editingTagIndex: state.editingTagIndex,
+    editingTagValue: state.editingTagValue,
+    
+    onToggleTags: handleToggleTags,
+    onCloseTags: handleCloseTags,
+    onAddTag: handleAddTag,
+    onUpdateTag: handleUpdateTag,
+    
+    onSetEditingTagIndex: (index) => {
+      state.editingTagIndex = index;
+      updateUI();
+    },
+
+    onSetEditingTagValue: (value) => {
+      state.editingTagValue = value;
+    }
   };
 }
 
 function getPlaylistProps() {
   return {
-    playlists: state.playlists,
+    playlists: state.searchTag
+    ? state.playlists.map(pl => ({
+        ...pl,
+        videos: pl.videos.filter(v =>
+          (v.tags || []).some(tag =>
+            tag.name.toLowerCase().includes(
+              state.searchTag.toLowerCase()
+            )
+          )
+        )
+      }))
+    : state.playlists,
     isCreating: state.isCreatingPlaylist,
     onStartCreate: () => { state.isCreatingPlaylist = true; updateUI(); },
     onPlaylistSubmit: handlePlaylistSubmit,
@@ -302,7 +439,7 @@ function getPlaylistProps() {
     addingToPlaylist: state.addingToPlaylist,
     step: state.step,
     newVideoTitle: state.newVideoTitle,
-    newVideoLink: state.newVideoUrl,
+    newVideoUrl: state.newVideoUrl,           // This was newVideoLink maybe now it will work
     editingVideoId: state.editingVideoId
     };
     }

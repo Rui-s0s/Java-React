@@ -127,7 +127,7 @@ export class PlaylistItem {
             placeholder="${step === 1 
               ? (editingVideoId ? `Edit title for ${editingName || 'video'}` : `Add title to ${playlist.name}`)
               : (editingVideoId ? `Edit URL for ${newVideoTitle || 'video'}` : `Add URL for ${newVideoTitle || 'video'}`)}"
-            value="${step === 1 ? newVideoTitle : newVideoUrl}"
+            value="${step === 1 ? (newVideoTitle || '') : newVideoUrl}"
             style="border-color: #cc0000;">
           <div class="form-footer">Press Enter to ${step === 1 ? 'continue' : 'finish'}, Esc to cancel</div>
         </div>
