@@ -3,6 +3,7 @@
   background-color: #0f0f0f;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 16px;
   border-bottom: 1px solid #2e303a;
   position: sticky;
@@ -23,4 +24,28 @@
   background-color: red;
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+.tag-search {
+  width: 300px;
+  max-width: 40vw;
+
+  padding: 8px 12px;
+
+  background: #1f1f1f;
+  color: white;
+
+  border: 1px solid #303030;
+  border-radius: 20px;
+
+  outline: none;
+  font-size: 14px;
+}
+
+.tag-search:focus {
+  border-color: #3ea6ff;
+}
+
+.tag-search::placeholder {
+  color: #aaa;
 }

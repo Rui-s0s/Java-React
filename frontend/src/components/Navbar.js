@@ -1,12 +1,19 @@
 import './Navbar.css';
 
-// RIGHT: This is a Template String in a .js file
-export function Navbar() {
+export function Navbar(searchValue = '') {
   return `
     <nav class="navbar">
       <div class="logo">
         <span>YT</span> Clone
       </div>
+
+      <input
+        type="text"
+        id="tag-search"
+        class="tag-search"
+        placeholder="Search tags..."
+        value="${searchValue}"
+      />
     </nav>
   `;
 }
