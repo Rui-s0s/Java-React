@@ -70,5 +70,22 @@ public class Video {
     }
 
     public Set<Tag> getTags() { return tags; }
-    public void setTags(Set<Tag> tags) { this.tags = tags; }
+    public void setTags(Set<Tag> tags) {
+        // 1. Remove this video from any old tags currently attached to it
+        if (this.tags != null) {
+            for (Tag oldTag : this.tags) {
+                oldTag.getVideos().remove(this);
+            }
+        }
+        
+        // 2. Assign the new collection
+        this.tags = tags;
+        
+        // 3. Make sure the new tags point back to this video
+        if (tags != null) {
+            for (Tag newTag : tags) {
+                newTag.getVideos().add(this);
+            }
+        }
+    }
 }
