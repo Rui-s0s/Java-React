@@ -48,3 +48,6 @@ export const fetchVideoComments = (videoId) => callApi(`/videos/${videoId}/comme
 export const likeVideo = (videoId) => callApi(`/videos/${videoId}/like`, 'PATCH');
 export const dislikeVideo = (videoId) => callApi(`/videos/${videoId}/dislike`, 'PATCH');
 
+// --- Tags ---
+export const getAllTags = () => callApi('/tags');
+export const updateVideoTags = (videoId, tagNamesArray) => callApi(`/videos/${videoId}/tags`, 'PUT', { tags: tagNamesArray });
