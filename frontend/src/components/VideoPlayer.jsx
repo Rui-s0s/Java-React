@@ -18,7 +18,13 @@ const VideoPlayer = ({
   onSetEditingTagIndex,
   onSetEditingTagValue,
   onUpdateTag,
-  onAddTag
+  onAddTag,
+
+  irAnterior,
+  irSiguiente,
+
+  haySiguiente,
+  hayAnterior
   }) => {
   const handleShare = () => {
     if (video?.url) {
@@ -51,6 +57,14 @@ const VideoPlayer = ({
         <button className={styles.actionBtn} onClick={onToggleTags}>
           🏷️ Edit tags
         </button>
+
+        <button className={styles.actionBtn} onClick={irAnterior} disabled={!hayAnterior()}>
+          ⏮ Anterior
+        </button>
+        <button className={styles.actionBtn} onClick={irSiguiente} disabled={!haySiguiente()}>
+          ⏭ Siguiente
+        </button>
+
         <button className={styles.actionBtn} onClick={onToggleChat}>
           {showChat ? '❌ Hide Chat' : '💬 Show Chat'}
         </button>

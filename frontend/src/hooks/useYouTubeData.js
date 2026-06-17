@@ -292,6 +292,62 @@ export function useYouTubeData() {
     }
   };
 
+  // Busca playlist en que se encuentra el video actual y el indice dentro de esa playlist, si no encuentra devuelve -1
+  const playlistIndiceVideo = () => {
+    for (const playlist of playlists) {
+      const index = playlist.videos.findIndex( video => video.id === currentVideo?.id );
+      if (index !== -1) {
+        return { playlist, index };
+      }
+    }
+    return null;
+  };
+
+  // Para esconder los botones en caso de que no haya videos siguientes o anteriores
+  // Revisa basado en el indice si es el ultimo video del array de playlist en que se encuentra para ir adelante
+  const haySiguiente = () => {
+    const result = playlistIndiceVideo();
+
+    if (!result) return false;
+
+    return result.index < result.playlist.videos.length - 1;
+  };
+
+  // Revisa basado en el indice si es el video 0 del array de playlist en que se encuentra para ir atras
+  const hayAnterior = () => {
+    const result = playlistIndiceVideo();
+
+    if (!result) return false;
+
+    return result.index > 0;
+  };
+
+  // Funciones para ir al siguiente y anterior video
+  const irSiguiente = () => {
+    const result = playlistIndiceVideo();
+
+    if (!result) return;
+
+    const { playlist, index } = result;
+
+    if (index < playlist.videos.length - 1) {
+      selectVideo(playlist.videos[index + 1]);
+    }
+  };
+
+  const irAnterior = () => {
+    const result = playlistIndiceVideo();
+
+    if (!result) return;
+
+    const { playlist, index } = result;
+
+    if (index > 0) {
+      selectVideo(playlist.videos[index - 1]);
+    }
+  };
+
+
   return {
     state: {
       playlists,
@@ -313,6 +369,9 @@ export function useYouTubeData() {
       editingTagIndex,
       editingTagValue,
       selectedTags,
+
+      haySiguiente,
+      hayAnterior
     },
     actions: {
       setShowChat,
@@ -340,6 +399,9 @@ export function useYouTubeData() {
       handleUpdateTag,
       handleAddTag,
       setSelectedTags,
+
+      irSiguiente,
+      irAnterior
     }
   };
 }

@@ -48,6 +48,11 @@ function App() {
             onSetEditingTagValue={actions.setEditingTagValue}
             onUpdateTag={actions.handleUpdateTag}
             onAddTag={actions.handleAddTag}
+
+            irSiguiente={actions.irSiguiente}
+            irAnterior={actions.irAnterior}
+            haySiguiente={state.haySiguiente}
+            hayAnterior={state.hayAnterior}
           />
         ) : (
           <div style={{ color: '#aaa', padding: '40px', textAlign: 'center', gridColumn: '1 / -1' }}>
